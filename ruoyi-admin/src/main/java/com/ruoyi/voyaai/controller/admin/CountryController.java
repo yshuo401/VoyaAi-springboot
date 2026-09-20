@@ -69,7 +69,7 @@ public class CountryController extends BaseController {
         return toAjax(service.delete(ids, getUsername()));
     }
 
-    @PreAuthorize("@ss.hasAnyPermi('voyaai:country:list,voyaai:country:query,voyaai:country:add,voyaai:country:edit,voyaai:province:list,voyaai:province:query,voyaai:province:add,voyaai:province:edit,voyaai:city:list,voyaai:city:query,voyaai:city:add,voyaai:city:edit')")
+    @PreAuthorize("@ss.hasAnyPermi('voyaai:country:list,voyaai:country:query,voyaai:country:add,voyaai:country:edit,voyaai:province:list,voyaai:province:query,voyaai:province:add,voyaai:province:edit,voyaai:city:list,voyaai:city:query,voyaai:city:add,voyaai:city:edit,voyaai:attraction:list,voyaai:attraction:add,voyaai:attraction:edit')")
     @GetMapping("/options")
     public AjaxResult options(@RequestParam(required = false) Long countryId,
                               @RequestParam(defaultValue = "true") boolean enabledOnly) {
