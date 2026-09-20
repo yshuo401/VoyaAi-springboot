@@ -145,3 +145,10 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# 微信小程序登录。AppSecret 只从环境变量读取，不提交真实值。
+voyaai:
+  wechat:
+    app-id: ${VOYAAI_WECHAT_APP_ID:}
+    app-secret: ${VOYAAI_WECHAT_APP_SECRET:}
+    session-seconds: ${VOYAAI_APP_SESSION_SECONDS:604800}
