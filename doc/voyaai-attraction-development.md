@@ -17,6 +17,15 @@
 - 导出：`POST /voyaai/attraction/export`
 - 城市下拉：`GET /voyaai/attraction/cityOptions?provinceId=...`
 
+## 小程序公开接口
+
+公开接口不要求后台菜单权限，只返回已上架且国家、省份、城市均未删除、已启用的景点：
+
+- `GET /app/voyaai/cities/{cityId}/attractions`：按城市查询景点，可选 `keyword` 搜索名称和简介。
+- `GET /app/voyaai/attractions/{id}`：查询景点详情及多图，未上架或地区停用时返回不存在。
+
+列表排序仍为 `sort DESC, id DESC`，排序值越大越靠前；同排序值时后创建的记录靠前。
+
 新增和编辑时，城市必须存在且处于启用状态；景点名称在同一城市内不能重复。景点有关联行程项、收藏、点赞或评论时不能删除，可以先下架。
 
 图片仍使用若依的 `/common/upload`。封面保存到景点主表，多图按拖动顺序保存到景点图片表；数据库只保存访问路径，文件目录由 `ruoyi.profile` 决定。
