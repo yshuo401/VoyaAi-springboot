@@ -39,6 +39,24 @@ public class VoyaAiAttractionServiceImpl implements IVoyaAiAttractionService {
     }
 
     @Override
+    public List<AttractionVO> publicList(Long cityId, String keyword) {
+        RegionValidation.id(cityId);
+        if (keyword != null && keyword.length() > 100) {
+            throw new ServiceException("搜索关键词最多100字", 400);
+        }
+        return mapper.selectPublicList(cityId, keyword == null ? null : keyword.trim());
+    }
+
+    @Override
+    public AttractionVO publicDetail(Long id) {
+        RegionValidation.id(id);
+        AttractionVO result = mapper.selectPublicById(id);
+        if (result == null) throw new ServiceException("景点不存在或暂未上架", 404);
+        result.setImages(mapper.selectImages(id));
+        return result;
+    }
+
+    @Override
     public AttractionVO detail(Long id) {
         RegionValidation.id(id);
         AttractionVO result = mapper.selectById(id);
