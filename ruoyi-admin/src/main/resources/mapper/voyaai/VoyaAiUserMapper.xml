@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiUserMapper">
+    <resultMap id="User" type="com.ruoyi.voyaai.domain.entity.VoyaAiUser">
+        <id column="id" property="id"/>
+        <result column="openid" property="openid"/>
+        <result column="unionid" property="unionid"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="status" property="status"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <select id="selectByOpenid" resultMap="User">select id, openid, unionid, nickname, avatar_url, status, del_flag from voya_ai_user where openid = #{openid}</select>
+    <select id="selectById" resultMap="User">select id, status, del_flag from voya_ai_user where id = #{id}</select>
+    <!-- Atomic registration against the existing unique OpenID index; never revive disabled/deleted users. -->
+    <insert id="registerIfAbsent">
+        insert into voya_ai_user (openid, unionid, nickname, status, del_flag, create_time, update_time)
+        values (#{openid}, #{unionid}, '旅行者', '0', '0', now(), now())
+        on duplicate key update id = id
+    </insert>
+    <update id="recordLogin">
+        update voya_ai_user set last_login_time = now(), update_time = now(), unionid = coalesce(#{unionid}, unionid)
+        where id = #{id} and status = '0' and del_flag = '0'
+    </update>
+    <select id="selectProfile" resultType="com.ruoyi.voyaai.domain.vo.AppUserVO">
+        select id, nickname, avatar_url as avatarUrl from voya_ai_user where id = #{id} and status = '0' and del_flag = '0'
+    </select>
+    <update id="updateProfile">
+        update voya_ai_user set nickname = #{nickname}, avatar_url = #{avatarUrl}, update_time = now()
+        where id = #{id} and status = '0' and del_flag = '0'
+    </update>
+</mapper>
