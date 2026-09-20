@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiAttractionMapper">
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiAttraction">
+        <result column="id" property="id"/>
+        <result column="city_id" property="cityId"/>
+        <result column="name" property="name"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="description" property="description"/>
+        <result column="address" property="address"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="ticket_price" property="ticketPrice"/>
+        <result column="opening_hours" property="openingHours"/>
+        <result column="recommended_duration" property="recommendedDuration"/>
+        <result column="rating" property="rating"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="favorite_count" property="favoriteCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.AttractionVO">
+        <result column="id" property="id"/>
+        <result column="city_id" property="cityId"/>
+        <result column="name" property="name"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="description" property="description"/>
+        <result column="address" property="address"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="ticket_price" property="ticketPrice"/>
+        <result column="opening_hours" property="openingHours"/>
+        <result column="recommended_duration" property="recommendedDuration"/>
+        <result column="rating" property="rating"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="favorite_count" property="favoriteCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="city_name" property="cityName"/>
+        <result column="province_id" property="provinceId"/>
+        <result column="province_name" property="provinceName"/>
+        <result column="country_id" property="countryId"/>
+        <result column="country_name" property="countryName"/>
+    </resultMap>
+    <sql id="viewColumns">
+        select t.*, c.name city_name, c.province_id, p.name province_name, p.country_id, co.name country_name
+        from voya_ai_attraction t
+        left join voya_ai_city c on c.id = t.city_id
+        left join voya_ai_province p on p.id = c.province_id
+        left join voya_ai_country co on co.id = p.country_id
+    </sql>
+    <select id="selectList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="name != null and name != ''">and t.name like concat('%', #{name}, '%')</if>
+        <if test="status != null">and t.status = #{status}</if>
+        <if test="countryId != null">and p.country_id = #{countryId}</if>
+        <if test="provinceId != null">and c.province_id = #{provinceId}</if>
+        <if test="cityId != null">and t.city_id = #{cityId}</if>
+        <if test="beginCreateTime != null">and t.create_time &gt;= #{beginCreateTime}</if>
+        <if test="endCreateTime != null">and t.create_time &lt; #{endExclusive}</if>
+        order by t.sort desc, t.id desc
+    </select>
+    <select id="selectById" resultMap="ViewResult">
+        <include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'
+    </select>
+    <select id="lockById" resultMap="EntityResult">
+        select * from voya_ai_attraction where id = #{id} and del_flag = '0' for update
+    </select>
+    <select id="countDuplicate" resultType="long">
+        select count(*) from voya_ai_attraction where city_id = #{cityId} and name = #{name}
+        <if test="id != null">and id != #{id}</if>
+    </select>
+    <select id="countReferences" resultType="long">
+        select (select count(*) from voya_ai_trip_item where attraction_id = #{id} and del_flag = '0')
+        + (select count(*) from voya_ai_favorite where target_type = 'attraction' and target_id = #{id})
+        + (select count(*) from voya_ai_like where target_type = 'attraction' and target_id = #{id})
+        + (select count(*) from voya_ai_comment where target_type = 'attraction' and target_id = #{id} and del_flag = '0')
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_attraction (city_id, name, cover_image, description, address, latitude, longitude, ticket_price, opening_hours, recommended_duration, rating, sort, status, remark, create_by, create_time, update_by, update_time, del_flag)
+        values (#{cityId}, #{name}, #{coverImage}, #{description}, #{address}, #{latitude}, #{longitude}, #{ticketPrice}, #{openingHours}, #{recommendedDuration}, #{rating}, #{sort}, #{status}, #{remark}, #{createBy}, now(), #{createBy}, now(), '0')
+    </insert>
+    <update id="update">
+        update voya_ai_attraction set city_id = #{cityId}, name = #{name}, cover_image = #{coverImage}, description = #{description}, address = #{address}, latitude = #{latitude}, longitude = #{longitude}, ticket_price = #{ticketPrice}, opening_hours = #{openingHours}, recommended_duration = #{recommendedDuration}, rating = #{rating}, sort = #{sort}, status = #{status}, remark = #{remark},
+        update_by = #{updateBy}, update_time = now() where id = #{id} and del_flag = '0'
+    </update>
+    <update id="changeStatus">
+        update voya_ai_attraction set status = #{status}, update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="softDelete">
+        update voya_ai_attraction set del_flag = '1', update_by = #{username}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <select id="selectImages" resultType="string">
+        select image_url from voya_ai_attraction_image where attraction_id = #{id} order by sort, id
+    </select>
+    <delete id="deleteImages">delete from voya_ai_attraction_image where attraction_id = #{id}</delete>
+    <insert id="insertImages">
+        insert into voya_ai_attraction_image (attraction_id, image_url, sort) values
+        <foreach collection="images" item="image" index="position" separator=",">
+            (#{id}, #{image}, #{position})
+        </foreach>
+    </insert>
+    <select id="selectCityOptions" resultType="com.ruoyi.voyaai.domain.vo.CityOptionVO">
+        select c.id, c.name,
+        case when c.status = '0' and p.status = '0' and co.status = '0' then '0' else '1' end as status
+        from voya_ai_city c
+        join voya_ai_province p on p.id = c.province_id and p.del_flag = '0'
+        join voya_ai_country co on co.id = p.country_id and co.del_flag = '0'
+        where c.del_flag = '0' and c.province_id = #{provinceId}
+        order by c.sort desc, c.id desc
+    </select>
+</mapper>
