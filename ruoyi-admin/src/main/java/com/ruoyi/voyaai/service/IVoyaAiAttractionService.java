@@ -6,6 +6,8 @@ import com.ruoyi.voyaai.domain.vo.AttractionVO;
 
 public interface IVoyaAiAttractionService {
     List<AttractionVO> list(AttractionQueryDTO query);
+    List<AttractionVO> publicList(Long cityId, String keyword);
+    AttractionVO publicDetail(Long id);
     AttractionVO detail(Long id);
     List<com.ruoyi.voyaai.domain.vo.CityOptionVO> cityOptions(Long provinceId);
     int create(AttractionCreateDTO dto, String username);
