@@ -4,8 +4,15 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 
-public class AttractionCreateDTO {
+public class AttractionDTO {
+
+    @Null(groups = CreateGroup.class, message = "创建时不能指定ID")
+    @NotNull(groups = UpdateGroup.class, message = "ID不能为空")
+    @Positive
+    private Long id;
 
     @NotNull(message = "请选择上级地区")
     @Positive(message = "地区ID必须大于0")
@@ -42,91 +49,44 @@ public class AttractionCreateDTO {
     @Digits(integer = 3, fraction = 7, message = "经度最多7位小数")
     private BigDecimal longitude;
 
-    public Long getCityId() {
-        return cityId;
-    }
-
-    public void setCityId(Long cityId) {
-        this.cityId = cityId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public String getCoverImage() {
-        return coverImage;
-    }
-
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(BigDecimal latitude) {
-        this.latitude = latitude;
-    }
-
-    public BigDecimal getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(BigDecimal longitude) {
-        this.longitude = longitude;
-    }
-
     @Size(max = 500, message = "地址最多500字")
     private String address;
+
     @NotNull @DecimalMin("0") @Digits(integer = 8, fraction = 2)
     private BigDecimal ticketPrice = BigDecimal.ZERO;
+
     @Size(max = 200, message = "开放时间最多200字")
     private String openingHours;
+
     @NotNull @Min(0)
     private Integer recommendedDuration = 0;
+
     @NotNull @DecimalMin("0") @DecimalMax("5") @Digits(integer = 1, fraction = 1)
     private BigDecimal rating = BigDecimal.ZERO;
+
     @NotNull @Size(max = 9, message = "景点图片最多9张")
     private List<@NotBlank @Size(max = 500) String> images = new ArrayList<>();
 
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Long getCityId() { return cityId; }
+    public void setCityId(Long cityId) { this.cityId = cityId; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public Integer getSort() { return sort; }
+    public void setSort(Integer sort) { this.sort = sort; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getRemark() { return remark; }
+    public void setRemark(String remark) { this.remark = remark; }
+    public String getCoverImage() { return coverImage; }
+    public void setCoverImage(String coverImage) { this.coverImage = coverImage; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public BigDecimal getLatitude() { return latitude; }
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
+    public BigDecimal getLongitude() { return longitude; }
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
     public BigDecimal getTicketPrice() { return ticketPrice; }

@@ -13,6 +13,12 @@ public final class RegionValidation {
         if (!errors.isEmpty()) throw new ServiceException(errors.iterator().next().getMessage(), 400);
     }
 
+    public static void validate(Validator validator, Object dto, Class<?> group) {
+        if (dto == null) throw new ServiceException("请求参数不能为空", 400);
+        var errors = validator.validate(dto, group);
+        if (!errors.isEmpty()) throw new ServiceException(errors.iterator().next().getMessage(), 400);
+    }
+
     public static void id(Long id) {
         if (id == null || id <= 0) throw new ServiceException("ID必须大于0", 400);
     }

@@ -15,7 +15,7 @@ public class RegionQueryDTO {
     @Max(100)
     private Integer pageSize = 10;
 
-    @Size(max = 100)
+    @Size(max = 200)
     private String name;
 
     @Pattern(regexp = "[01]", message = "状态只能为0或1")

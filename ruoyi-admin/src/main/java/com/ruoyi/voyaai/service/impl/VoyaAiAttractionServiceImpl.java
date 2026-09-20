@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.voyaai.domain.dto.*;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 import com.ruoyi.voyaai.domain.entity.*;
 import com.ruoyi.voyaai.domain.vo.AttractionVO;
 import com.ruoyi.voyaai.mapper.*;
@@ -67,8 +69,8 @@ public class VoyaAiAttractionServiceImpl implements IVoyaAiAttractionService {
 
     @Override
     @Transactional
-    public int create(AttractionCreateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int create(AttractionDTO dto, String username) {
+        RegionValidation.validate(validator, dto, CreateGroup.class);
         VoyaAiAttraction attraction = entity(dto);
         checkParent(attraction);
         checkUnique(attraction);
@@ -80,8 +82,8 @@ public class VoyaAiAttractionServiceImpl implements IVoyaAiAttractionService {
 
     @Override
     @Transactional
-    public int update(AttractionUpdateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int update(AttractionDTO dto, String username) {
+        RegionValidation.validate(validator, dto, UpdateGroup.class);
         requireExisting(dto.getId());
         VoyaAiAttraction attraction = entity(dto);
         checkParent(attraction);
@@ -147,7 +149,7 @@ public class VoyaAiAttractionServiceImpl implements IVoyaAiAttractionService {
         }
     }
 
-    private VoyaAiAttraction entity(AttractionCreateDTO dto) {
+    private VoyaAiAttraction entity(AttractionDTO dto) {
         VoyaAiAttraction entity = new VoyaAiAttraction();
         // Only allowlisted DTO properties are copied; audit fields never come from the client.
         BeanUtils.copyProperties(dto, entity);

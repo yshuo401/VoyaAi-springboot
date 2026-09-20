@@ -1,8 +1,8 @@
 package com.ruoyi.voyaai.controller.admin;
 
-import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.annotation.Log;
@@ -12,6 +12,8 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.voyaai.domain.dto.*;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 import com.ruoyi.voyaai.domain.vo.CountryVO;
 import com.ruoyi.voyaai.service.IVoyaAiCountryService;
 
@@ -26,7 +28,7 @@ public class CountryController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('voyaai:country:list')")
     @GetMapping("/list")
-    public TableDataInfo list(@Valid CountryQueryDTO query) {
+    public TableDataInfo list(@Validated CountryQueryDTO query) {
         try {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
             return getDataTable(service.list(query));
@@ -44,21 +46,21 @@ public class CountryController extends BaseController {
     @PreAuthorize("@ss.hasPermi('voyaai:country:add')")
     @Log(title = "国家", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult create(@Valid @RequestBody CountryCreateDTO dto) {
+    public AjaxResult create(@Validated(CreateGroup.class) @RequestBody CountryDTO dto) {
         return toAjax(service.create(dto, getUsername()));
     }
 
     @PreAuthorize("@ss.hasPermi('voyaai:country:edit')")
     @Log(title = "国家", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult update(@Valid @RequestBody CountryUpdateDTO dto) {
+    public AjaxResult update(@Validated(UpdateGroup.class) @RequestBody CountryDTO dto) {
         return toAjax(service.update(dto, getUsername()));
     }
 
     @PreAuthorize("@ss.hasPermi('voyaai:country:edit')")
     @Log(title = "国家状态", businessType = BusinessType.UPDATE)
     @PutMapping("/changeStatus")
-    public AjaxResult changeStatus(@Valid @RequestBody RegionStatusDTO dto) {
+    public AjaxResult changeStatus(@Validated @RequestBody RegionStatusDTO dto) {
         return toAjax(service.changeStatus(dto, getUsername()));
     }
 

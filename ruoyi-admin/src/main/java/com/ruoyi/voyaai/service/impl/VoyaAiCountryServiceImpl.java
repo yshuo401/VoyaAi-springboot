@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.voyaai.domain.dto.*;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 import com.ruoyi.voyaai.domain.entity.*;
 import com.ruoyi.voyaai.domain.vo.CountryVO;
 import com.ruoyi.voyaai.mapper.*;
@@ -41,8 +43,8 @@ public class VoyaAiCountryServiceImpl implements IVoyaAiCountryService {
 
     @Override
     @Transactional
-    public int create(CountryCreateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int create(CountryDTO dto, String username) {
+        RegionValidation.validate(validator, dto, CreateGroup.class);
         VoyaAiCountry country = entity(dto);
         checkParent(country);
         checkUnique(country);
@@ -52,8 +54,8 @@ public class VoyaAiCountryServiceImpl implements IVoyaAiCountryService {
 
     @Override
     @Transactional
-    public int update(CountryUpdateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int update(CountryDTO dto, String username) {
+        RegionValidation.validate(validator, dto, UpdateGroup.class);
         requireExisting(dto.getId());
         VoyaAiCountry country = entity(dto);
         checkParent(country);
@@ -106,7 +108,7 @@ public class VoyaAiCountryServiceImpl implements IVoyaAiCountryService {
         // 国家没有上级地区。
     }
 
-    private VoyaAiCountry entity(CountryCreateDTO dto) {
+    private VoyaAiCountry entity(CountryDTO dto) {
         VoyaAiCountry entity = new VoyaAiCountry();
         // Only allowlisted DTO properties are copied; audit fields never come from the client.
         BeanUtils.copyProperties(dto, entity);

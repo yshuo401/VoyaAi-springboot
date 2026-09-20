@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.voyaai.domain.dto.*;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 import com.ruoyi.voyaai.domain.entity.*;
 import com.ruoyi.voyaai.domain.vo.CityVO;
 import com.ruoyi.voyaai.mapper.*;
@@ -53,8 +55,8 @@ public class VoyaAiCityServiceImpl implements IVoyaAiCityService {
 
     @Override
     @Transactional
-    public int create(CityCreateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int create(CityDTO dto, String username) {
+        RegionValidation.validate(validator, dto, CreateGroup.class);
         VoyaAiCity city = entity(dto);
         checkParent(city);
         checkUnique(city);
@@ -64,8 +66,8 @@ public class VoyaAiCityServiceImpl implements IVoyaAiCityService {
 
     @Override
     @Transactional
-    public int update(CityUpdateDTO dto, String username) {
-        RegionValidation.validate(validator, dto);
+    public int update(CityDTO dto, String username) {
+        RegionValidation.validate(validator, dto, UpdateGroup.class);
         requireExisting(dto.getId());
         VoyaAiCity city = entity(dto);
         checkParent(city);
@@ -125,7 +127,7 @@ public class VoyaAiCityServiceImpl implements IVoyaAiCityService {
         }
     }
 
-    private VoyaAiCity entity(CityCreateDTO dto) {
+    private VoyaAiCity entity(CityDTO dto) {
         VoyaAiCity entity = new VoyaAiCity();
         // Only allowlisted DTO properties are copied; audit fields never come from the client.
         BeanUtils.copyProperties(dto, entity);

@@ -1,8 +1,8 @@
 package com.ruoyi.voyaai.controller.admin;
 
-import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.annotation.Log;
@@ -12,6 +12,8 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.voyaai.domain.dto.*;
+import com.ruoyi.voyaai.domain.dto.group.CreateGroup;
+import com.ruoyi.voyaai.domain.dto.group.UpdateGroup;
 import com.ruoyi.voyaai.domain.vo.AttractionVO;
 import com.ruoyi.voyaai.service.IVoyaAiAttractionService;
 
@@ -26,7 +28,7 @@ public class AttractionController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('voyaai:attraction:list')")
     @GetMapping("/list")
-    public TableDataInfo list(@Valid AttractionQueryDTO query) {
+    public TableDataInfo list(@Validated AttractionQueryDTO query) {
         try {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
             return getDataTable(service.list(query));
@@ -44,21 +46,21 @@ public class AttractionController extends BaseController {
     @PreAuthorize("@ss.hasPermi('voyaai:attraction:add')")
     @Log(title = "景点", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult create(@Valid @RequestBody AttractionCreateDTO dto) {
+    public AjaxResult create(@Validated(CreateGroup.class) @RequestBody AttractionDTO dto) {
         return toAjax(service.create(dto, getUsername()));
     }
 
     @PreAuthorize("@ss.hasPermi('voyaai:attraction:edit')")
     @Log(title = "景点", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult update(@Valid @RequestBody AttractionUpdateDTO dto) {
+    public AjaxResult update(@Validated(UpdateGroup.class) @RequestBody AttractionDTO dto) {
         return toAjax(service.update(dto, getUsername()));
     }
 
     @PreAuthorize("@ss.hasPermi('voyaai:attraction:edit')")
     @Log(title = "景点状态", businessType = BusinessType.UPDATE)
     @PutMapping("/changeStatus")
-    public AjaxResult changeStatus(@Valid @RequestBody RegionStatusDTO dto) {
+    public AjaxResult changeStatus(@Validated @RequestBody RegionStatusDTO dto) {
         return toAjax(service.changeStatus(dto, getUsername()));
     }
 
@@ -72,7 +74,7 @@ public class AttractionController extends BaseController {
     @PreAuthorize("@ss.hasPermi('voyaai:attraction:export')")
     @Log(title = "景点", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, @Valid AttractionQueryDTO query) {
+    public void export(HttpServletResponse response, @Validated AttractionQueryDTO query) {
         new ExcelUtil<>(AttractionVO.class).exportExcel(response, service.list(query), "景点数据");
     }
 
