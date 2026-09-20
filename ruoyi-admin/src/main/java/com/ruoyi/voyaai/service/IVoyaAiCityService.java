@@ -6,6 +6,7 @@ import com.ruoyi.voyaai.domain.vo.CityVO;
 
 public interface IVoyaAiCityService {
     List<CityVO> list(CityQueryDTO query);
+    List<CityVO> publicList(String keyword);
     CityVO detail(Long id);
     int create(CityCreateDTO dto, String username);
     int update(CityUpdateDTO dto, String username);

@@ -36,6 +36,14 @@ public class VoyaAiCityServiceImpl implements IVoyaAiCityService {
     }
 
     @Override
+    public List<CityVO> publicList(String keyword) {
+        if (keyword != null && keyword.length() > 100) {
+            throw new ServiceException("搜索关键词最多100字", 400);
+        }
+        return mapper.selectPublicList(keyword == null ? null : keyword.trim());
+    }
+
+    @Override
     public CityVO detail(Long id) {
         RegionValidation.id(id);
         CityVO result = mapper.selectById(id);

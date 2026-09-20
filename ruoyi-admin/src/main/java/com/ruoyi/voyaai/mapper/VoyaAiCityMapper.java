@@ -8,6 +8,7 @@ import com.ruoyi.voyaai.domain.vo.CityVO;
 
 public interface VoyaAiCityMapper {
     List<CityVO> selectList(CityQueryDTO query);
+    List<CityVO> selectPublicList(@Param("keyword") String keyword);
     CityVO selectById(Long id);
     VoyaAiCity lockById(Long id);
     long countDuplicate(VoyaAiCity entity);

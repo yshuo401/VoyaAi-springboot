@@ -56,6 +56,16 @@
     <select id="selectById" resultMap="ViewResult">
         <include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'
     </select>
+    <select id="selectPublicList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0' and t.status = '0'
+          and p.del_flag = '0' and p.status = '0'
+          and co.del_flag = '0' and co.status = '0'
+        <if test="keyword != null and keyword != ''">
+          and (t.name like concat('%', #{keyword}, '%') or t.description like concat('%', #{keyword}, '%'))
+        </if>
+        order by t.sort desc, t.id desc
+    </select>
     <select id="lockById" resultMap="EntityResult">
         select * from voya_ai_city where id = #{id} and del_flag = '0' for update
     </select>
