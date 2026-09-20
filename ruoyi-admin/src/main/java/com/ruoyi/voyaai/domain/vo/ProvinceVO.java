@@ -1,17 +1,16 @@
 package com.ruoyi.voyaai.domain.vo;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
 
-public class CityVO {
+public class ProvinceVO {
 
     @Excel(name = "ID")
     private Long id;
-    private Long provinceId;
+    private Long countryId;
 
-    @Excel(name = "城市名称")
+    @Excel(name = "省份名称")
     private String name;
 
     @Excel(name = "排序")
@@ -20,20 +19,10 @@ public class CityVO {
     @Excel(name = "状态", dictType = "sys_normal_disable")
     private String status;
     private String remark;
-    private String coverImage;
-    private String description;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
+    private String code;
 
     @Excel(name = "国家")
     private String countryName;
-    private Long countryId;
-
-    @Excel(name = "省份")
-    private String provinceName;
-
-    @Excel(name = "浏览量")
-    private Long viewCount;
     private String createBy;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -52,12 +41,12 @@ public class CityVO {
         this.id = id;
     }
 
-    public Long getProvinceId() {
-        return provinceId;
+    public Long getCountryId() {
+        return countryId;
     }
 
-    public void setProvinceId(Long provinceId) {
-        this.provinceId = provinceId;
+    public void setCountryId(Long countryId) {
+        this.countryId = countryId;
     }
 
     public String getName() {
@@ -92,36 +81,12 @@ public class CityVO {
         this.remark = remark;
     }
 
-    public String getCoverImage() {
-        return coverImage;
+    public String getCode() {
+        return code;
     }
 
-    public void setCoverImage(String coverImage) {
-        this.coverImage = coverImage;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(BigDecimal latitude) {
-        this.latitude = latitude;
-    }
-
-    public BigDecimal getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(BigDecimal longitude) {
-        this.longitude = longitude;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getCountryName() {
@@ -130,30 +95,6 @@ public class CityVO {
 
     public void setCountryName(String countryName) {
         this.countryName = countryName;
-    }
-
-    public Long getCountryId() {
-        return countryId;
-    }
-
-    public void setCountryId(Long countryId) {
-        this.countryId = countryId;
-    }
-
-    public String getProvinceName() {
-        return provinceName;
-    }
-
-    public void setProvinceName(String provinceName) {
-        this.provinceName = provinceName;
-    }
-
-    public Long getViewCount() {
-        return viewCount;
-    }
-
-    public void setViewCount(Long viewCount) {
-        this.viewCount = viewCount;
     }
 
     public String getCreateBy() {

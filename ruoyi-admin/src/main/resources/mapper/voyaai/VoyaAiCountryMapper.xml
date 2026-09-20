@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiCountryMapper">
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiCountry">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="code" property="code"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.CountryVO">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="code" property="code"/>
+    </resultMap>
+    <sql id="viewColumns">
+        select t.id, t.name, t.sort, t.status, t.create_by, t.create_time, t.update_by, t.update_time, t.remark, t.code from voya_ai_country t
+    </sql>
+    <select id="selectList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="name != null and name != ''">and t.name like concat('%', #{name}, '%')</if>
+        <if test="status != null">and t.status = #{status}</if>
+        <if test="beginCreateTime != null">and t.create_time &gt;= #{beginCreateTime}</if>
+        <if test="endCreateTime != null">and t.create_time &lt; #{endExclusive}</if>
+        order by t.sort desc, t.id desc
+    </select>
+    <select id="selectById" resultMap="ViewResult">
+        <include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'
+    </select>
+    <select id="lockById" resultMap="EntityResult">
+        select * from voya_ai_country where id = #{id} and del_flag = '0' for update
+    </select>
+    <!-- Unique indexes include deleted rows; keep that policy explicit. -->
+    <select id="countDuplicate" resultType="long">
+        select count(*) from voya_ai_country where (name = #{name} or (#{code} is not null and code = #{code}))
+        <if test="id != null">and id != #{id}</if>
+    </select>
+    <select id="countReferences" resultType="long">select count(*) from voya_ai_province where country_id = #{id} and del_flag = '0'</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_country (name, sort, status, remark, code, create_by, create_time, update_by, update_time, del_flag)
+        values (#{name}, #{sort}, #{status}, #{remark}, #{code}, #{createBy}, now(), #{createBy}, now(), '0')
+    </insert>
+    <update id="update">
+        update voya_ai_country set name = #{name}, sort = #{sort}, status = #{status}, remark = #{remark}, code = #{code},
+            update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="changeStatus">
+        update voya_ai_country set status = #{status}, update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="softDelete">
+        update voya_ai_country set del_flag = '1', update_by = #{username}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <select id="selectOptions" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="enabledOnly">and t.status = '0'</if>
+        order by t.sort desc, t.id desc
+    </select>
+</mapper>

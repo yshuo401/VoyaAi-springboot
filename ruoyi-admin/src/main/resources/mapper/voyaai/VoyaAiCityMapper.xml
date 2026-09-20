@@ -1,86 +1,85 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiCityMapper">
-    <resultMap id="CityResult" type="VoyaAiCity">
-        <id property="id" column="id"/>
-        <result property="provinceId" column="province_id"/>
-        <result property="name" column="name"/>
-        <result property="coverImage" column="cover_image"/>
-        <result property="description" column="description"/>
-        <result property="latitude" column="latitude"/>
-        <result property="longitude" column="longitude"/>
-        <result property="sort" column="sort"/>
-        <result property="status" column="status"/>
-        <result property="viewCount" column="view_count"/>
-        <result property="createBy" column="create_by"/>
-        <result property="createTime" column="create_time"/>
-        <result property="updateBy" column="update_by"/>
-        <result property="updateTime" column="update_time"/>
-        <result property="delFlag" column="del_flag"/>
-        <result property="remark" column="remark"/>
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiCity">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="province_id" property="provinceId"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="description" property="description"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="del_flag" property="delFlag"/>
     </resultMap>
-    <sql id="columns">select id,
-                             province_id,
-                             name,
-                             cover_image,
-                             description,
-                             latitude,
-                             longitude,
-                             sort,
-                             status,
-                             view_count,
-                             create_by,
-                             create_time,
-                             update_by,
-                             update_time,
-                             del_flag,
-                             remark
-                      from voya_ai_city</sql>
-    <select id="selectVoyaAiCityById" resultMap="CityResult">
-        <include refid="columns"/>
-        where id=#{id} and del_flag='0'
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.CityVO">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="province_id" property="provinceId"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="description" property="description"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="country_name" property="countryName"/>
+        <result column="province_name" property="provinceName"/>
+        <result column="country_id" property="countryId"/>
+    </resultMap>
+    <sql id="viewColumns">
+        select t.id, t.name, t.sort, t.status, t.create_by, t.create_time, t.update_by, t.update_time, t.remark, t.province_id, t.cover_image, t.description, t.latitude, t.longitude, t.view_count, p.name as province_name, p.country_id, co.name as country_name from voya_ai_city t left join voya_ai_province p on p.id = t.province_id left join voya_ai_country co on co.id = p.country_id
+    </sql>
+    <select id="selectList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="name != null and name != ''">and t.name like concat('%', #{name}, '%')</if>
+        <if test="status != null">and t.status = #{status}</if>
+        <if test="countryId != null">and p.country_id = #{countryId}</if>
+        <if test="provinceId != null">and t.province_id = #{provinceId}</if>
+        <if test="beginCreateTime != null">and t.create_time &gt;= #{beginCreateTime}</if>
+        <if test="endCreateTime != null">and t.create_time &lt; #{endExclusive}</if>
+        order by t.sort desc, t.id desc
     </select>
-    <select id="selectVoyaAiCityList" parameterType="VoyaAiCity" resultMap="CityResult">
-        <include refid="columns"/>
-        <where>del_flag='0'
-            <if test="provinceId != null">and province_id=#{provinceId}</if>
-            <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
-            <if test="status != null and status != ''">and status=#{status}</if>
-        </where>
-        order by sort asc, id desc
+    <select id="selectById" resultMap="ViewResult">
+        <include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'
     </select>
-    <insert id="insertVoyaAiCity" parameterType="VoyaAiCity" useGeneratedKeys="true"
-            keyProperty="id">insert into voya_ai_city (province_id, name, cover_image, description, latitude, longitude,
-                                                       sort, status, create_by, create_time, del_flag, remark)
-                             values (#{provinceId}, #{name}, #{coverImage}, #{description}, #{latitude}, #{longitude},
-                                     coalesce(#{sort}, 0), coalesce(#{status}, '0'), #{createBy}, now(), '0',
-                                     #{remark})</insert>
-    <update id="updateVoyaAiCity" parameterType="VoyaAiCity">update voya_ai_city
-                                                             set province_id=#{provinceId},
-                                                                 name=#{name},
-                                                                 cover_image=#{coverImage},
-                                                                 description=#{description},
-                                                                 latitude=#{latitude},
-                                                                 longitude=#{longitude},
-                                                                 sort=#{sort},
-                                                                 update_by=#{updateBy},
-                                                                 update_time=now(),
-                                                                 remark=#{remark}
-                                                             where id = #{id}
-                                                               and del_flag = '0'</update>
-    <update id="updateVoyaAiCityStatus" parameterType="VoyaAiCity">update voya_ai_city
-                                                                   set status=#{status},
-                                                                       update_by=#{updateBy},
-                                                                       update_time=now()
-                                                                   where id = #{id}
-                                                                     and del_flag = '0'</update>
-    <update id="deleteVoyaAiCityById">update voya_ai_city
-                                      set del_flag='1',
-                                          update_time=now()
-                                      where id = #{id}
-                                        and del_flag = '0'</update>
-    <update id="deleteVoyaAiCityByIds">update voya_ai_city set del_flag='1',update_time=now() where id in <foreach
-            item="id" collection="array" open="(" separator="," close=")">#{id}
-    </foreach> and del_flag='0'
+    <select id="lockById" resultMap="EntityResult">
+        select * from voya_ai_city where id = #{id} and del_flag = '0' for update
+    </select>
+    <!-- Unique indexes include deleted rows; keep that policy explicit. -->
+    <select id="countDuplicate" resultType="long">
+        select count(*) from voya_ai_city where name = #{name} and province_id = #{provinceId}
+        <if test="id != null">and id != #{id}</if>
+    </select>
+    <select id="countReferences" resultType="long">select (select count(*) from voya_ai_attraction where city_id = #{id} and del_flag = '0') + (select count(*) from voya_ai_guide where city_id = #{id} and del_flag = '0') + (select count(*) from voya_ai_trip where city_id = #{id} and del_flag = '0')</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_city (name, sort, status, remark, province_id, cover_image, description, latitude, longitude, create_by, create_time, update_by, update_time, del_flag)
+        values (#{name}, #{sort}, #{status}, #{remark}, #{provinceId}, #{coverImage}, #{description}, #{latitude}, #{longitude}, #{createBy}, now(), #{createBy}, now(), '0')
+    </insert>
+    <update id="update">
+        update voya_ai_city set name = #{name}, sort = #{sort}, status = #{status}, remark = #{remark}, province_id = #{provinceId}, cover_image = #{coverImage}, description = #{description}, latitude = #{latitude}, longitude = #{longitude},
+            update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="changeStatus">
+        update voya_ai_city set status = #{status}, update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="softDelete">
+        update voya_ai_city set del_flag = '1', update_by = #{username}, update_time = now()
+        where id = #{id} and del_flag = '0'
     </update>
 </mapper>

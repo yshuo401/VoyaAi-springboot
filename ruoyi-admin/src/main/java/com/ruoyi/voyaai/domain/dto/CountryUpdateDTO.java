@@ -2,7 +2,7 @@ package com.ruoyi.voyaai.domain.dto;
 
 import jakarta.validation.constraints.*;
 
-public class CityUpdateDTO extends CityCreateDTO {
+public class CountryUpdateDTO extends CountryCreateDTO {
 
     @NotNull(message = "ID不能为空")
     @Positive

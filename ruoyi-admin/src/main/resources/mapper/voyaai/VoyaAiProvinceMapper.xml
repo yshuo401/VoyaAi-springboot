@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiProvinceMapper">
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiProvince">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="country_id" property="countryId"/>
+        <result column="code" property="code"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.ProvinceVO">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="country_id" property="countryId"/>
+        <result column="code" property="code"/>
+        <result column="country_name" property="countryName"/>
+    </resultMap>
+    <sql id="viewColumns">
+        select t.id, t.name, t.sort, t.status, t.create_by, t.create_time, t.update_by, t.update_time, t.remark, t.country_id, t.code, co.name as country_name from voya_ai_province t left join voya_ai_country co on co.id = t.country_id
+    </sql>
+    <select id="selectList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="name != null and name != ''">and t.name like concat('%', #{name}, '%')</if>
+        <if test="status != null">and t.status = #{status}</if>
+        <if test="countryId != null">and t.country_id = #{countryId}</if>
+        <if test="beginCreateTime != null">and t.create_time &gt;= #{beginCreateTime}</if>
+        <if test="endCreateTime != null">and t.create_time &lt; #{endExclusive}</if>
+        order by t.sort desc, t.id desc
+    </select>
+    <select id="selectById" resultMap="ViewResult">
+        <include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'
+    </select>
+    <select id="lockById" resultMap="EntityResult">
+        select * from voya_ai_province where id = #{id} and del_flag = '0' for update
+    </select>
+    <!-- Unique indexes include deleted rows; keep that policy explicit. -->
+    <select id="countDuplicate" resultType="long">
+        select count(*) from voya_ai_province where name = #{name} and country_id = #{countryId}
+        <if test="id != null">and id != #{id}</if>
+    </select>
+    <select id="countReferences" resultType="long">select count(*) from voya_ai_city where province_id = #{id} and del_flag = '0'</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_province (name, sort, status, remark, country_id, code, create_by, create_time, update_by, update_time, del_flag)
+        values (#{name}, #{sort}, #{status}, #{remark}, #{countryId}, #{code}, #{createBy}, now(), #{createBy}, now(), '0')
+    </insert>
+    <update id="update">
+        update voya_ai_province set name = #{name}, sort = #{sort}, status = #{status}, remark = #{remark}, country_id = #{countryId}, code = #{code},
+            update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="changeStatus">
+        update voya_ai_province set status = #{status}, update_by = #{updateBy}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <update id="softDelete">
+        update voya_ai_province set del_flag = '1', update_by = #{username}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+    <select id="selectOptions" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        and t.country_id = #{countryId} and co.del_flag = '0'
+        <if test="enabledOnly">and t.status = '0' and co.status = '0'</if>
+        order by t.sort desc, t.id desc
+    </select>
+</mapper>
