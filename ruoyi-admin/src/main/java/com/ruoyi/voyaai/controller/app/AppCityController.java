@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.voyaai.domain.vo.AttractionVO;
 import com.ruoyi.voyaai.service.IVoyaAiAttractionService;
 import com.ruoyi.voyaai.service.IVoyaAiCityService;
@@ -14,6 +15,7 @@ import com.ruoyi.voyaai.service.IVoyaAiCityService;
 /** Public read-only endpoints for the mini-program. No admin permission is required. */
 @RestController
 @RequestMapping("/app/voyaai")
+@Anonymous
 public class AppCityController {
     private final IVoyaAiAttractionService attractionService;
     private final IVoyaAiCityService cityService;
