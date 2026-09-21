@@ -14,17 +14,20 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.voyaai.mapper.VoyaAiFavoriteMapper;
+import com.ruoyi.voyaai.service.app.AppFavoriteService;
 
 @RestController
 @RequestMapping("/voyaai/favorite")
 public class FavoriteController extends BaseController {
 
     private final VoyaAiFavoriteMapper mapper;
+    private final AppFavoriteService favorites;
 
     private static final Set<String> TARGET_TYPES = Set.of("city", "attraction", "guide", "trip");
 
-    public FavoriteController(VoyaAiFavoriteMapper mapper) {
+    public FavoriteController(VoyaAiFavoriteMapper mapper, AppFavoriteService favorites) {
         this.mapper = mapper;
+        this.favorites = favorites;
     }
 
     @PreAuthorize("@ss.hasPermi('voyaai:favorite:list')")
@@ -57,7 +60,7 @@ public class FavoriteController extends BaseController {
     @Log(title = "收藏管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids) {
-        Arrays.stream(ids).forEach(mapper::removeById);
+        Arrays.stream(ids).forEach(favorites::removeById);
         return success();
     }
 }

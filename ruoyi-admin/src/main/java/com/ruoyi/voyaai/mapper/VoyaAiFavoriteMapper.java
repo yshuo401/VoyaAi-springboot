@@ -24,5 +24,11 @@ public interface VoyaAiFavoriteMapper {
 
     FavoriteVO selectById(@Param("id") Long id);
 
+    VoyaAiFavorite selectEntityById(@Param("id") Long id);
+
     int removeById(@Param("id") Long id);
+
+    int adjustAttractionFavoriteCount(@Param("targetId") Long targetId, @Param("delta") int delta);
+
+    int adjustGuideFavoriteCount(@Param("targetId") Long targetId, @Param("delta") int delta);
 }
