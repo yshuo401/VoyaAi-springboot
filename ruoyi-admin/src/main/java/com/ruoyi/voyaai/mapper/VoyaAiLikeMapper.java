@@ -31,4 +31,6 @@ public interface VoyaAiLikeMapper {
     int adjustAttractionLikeCount(@Param("targetId") Long targetId, @Param("delta") int delta);
 
     int adjustGuideLikeCount(@Param("targetId") Long targetId, @Param("delta") int delta);
+
+    int adjustCommentLikeCount(@Param("targetId") Long targetId, @Param("delta") int delta);
 }

@@ -66,6 +66,8 @@ public class AppLikeService {
             mapper.adjustAttractionLikeCount(targetId, delta);
         } else if ("guide".equals(targetType)) {
             mapper.adjustGuideLikeCount(targetId, delta);
+        } else if ("comment".equals(targetType)) {
+            mapper.adjustCommentLikeCount(targetId, delta);
         }
     }
 }

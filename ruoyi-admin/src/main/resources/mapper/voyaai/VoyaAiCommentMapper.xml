@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiCommentMapper">
+
+    <resultMap id="CommentVOResult" type="com.ruoyi.voyaai.domain.vo.CommentVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="create_time" property="createTime"/>
+        <result column="target_title" property="targetTitle"/>
+        <result column="parent_nickname" property="parentNickname"/>
+        <result column="parent_content" property="parentContent"/>
+    </resultMap>
+
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiComment">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_comment (user_id, target_type, target_id, parent_id, content, create_time)
+        values (#{userId}, #{targetType}, #{targetId}, #{parentId}, #{content}, now())
+    </insert>
+
+    <select id="selectEntityById" resultMap="EntityResult">
+        select id, user_id, target_type, target_id, parent_id, content, like_count, del_flag, create_time
+        from voya_ai_comment where id = #{id}
+    </select>
+
+    <select id="selectById" resultMap="CommentVOResult">
+        select c.id, c.user_id, c.target_type, c.target_id, c.parent_id, c.content, c.like_count, c.create_time,
+               u.nickname, u.avatar_url,
+               case c.target_type
+                   when 'attraction' then a.name
+                   when 'guide'      then g.title
+               end as target_title,
+               pc.content as parent_content, pu.nickname as parent_nickname
+        from voya_ai_comment c
+        left join voya_ai_user u       on c.user_id = u.id
+        left join voya_ai_attraction a on c.target_type = 'attraction' and c.target_id = a.id
+        left join voya_ai_guide g      on c.target_type = 'guide'      and c.target_id = g.id
+        left join voya_ai_comment pc   on c.parent_id > 0 and pc.id = c.parent_id
+        left join voya_ai_user pu      on pc.user_id = pu.id
+        where c.id = #{id} and c.del_flag = '0'
+    </select>
+
+    <select id="selectAdminList" resultMap="CommentVOResult">
+        select c.id, c.user_id, c.target_type, c.target_id, c.parent_id, c.content, c.like_count, c.create_time,
+               u.nickname, u.avatar_url,
+               case c.target_type
+                   when 'attraction' then a.name
+                   when 'guide'      then g.title
+               end as target_title,
+               pc.content as parent_content, pu.nickname as parent_nickname
+        from voya_ai_comment c
+        left join voya_ai_user u       on c.user_id = u.id
+        left join voya_ai_attraction a on c.target_type = 'attraction' and c.target_id = a.id
+        left join voya_ai_guide g      on c.target_type = 'guide'      and c.target_id = g.id
+        left join voya_ai_comment pc   on c.parent_id > 0 and pc.id = c.parent_id
+        left join voya_ai_user pu      on pc.user_id = pu.id
+        <where>
+            c.del_flag = '0'
+            <if test="targetType != null and targetType != ''">
+                and c.target_type = #{targetType}
+            </if>
+            <if test="nickname != null and nickname != ''">
+                and u.nickname like concat('%', #{nickname}, '%')
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and c.content like concat('%', #{keyword}, '%')
+            </if>
+            <if test="parentIdNotZero != null and parentIdNotZero">
+                and c.parent_id > 0
+            </if>
+            <if test="parentId != null and parentId >= 0 and (parentIdNotZero == null or !parentIdNotZero)">
+                and c.parent_id = #{parentId}
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and c.create_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and c.create_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by c.create_time desc, c.id desc
+    </select>
+
+    <select id="selectTopLevel" resultMap="CommentVOResult">
+        select c.id, c.user_id, c.target_type, c.target_id, c.parent_id, c.content, c.like_count, c.create_time,
+               u.nickname, u.avatar_url
+        from voya_ai_comment c
+        left join voya_ai_user u on c.user_id = u.id
+        where c.target_type = #{targetType} and c.target_id = #{targetId}
+          and c.parent_id = 0 and c.del_flag = '0'
+        order by c.create_time desc, c.id desc
+    </select>
+
+    <select id="selectRepliesByParentIds" resultMap="CommentVOResult">
+        select c.id, c.user_id, c.target_type, c.target_id, c.parent_id, c.content, c.like_count, c.create_time,
+               u.nickname, u.avatar_url
+        from voya_ai_comment c
+        left join voya_ai_user u on c.user_id = u.id
+        where c.parent_id in
+        <foreach collection="parentIds" item="pid" open="(" separator="," close=")">#{pid}</foreach>
+          and c.del_flag = '0'
+        order by c.create_time asc, c.id asc
+    </select>
+
+    <select id="selectRepliesByParentId" resultMap="CommentVOResult">
+        select c.id, c.user_id, c.target_type, c.target_id, c.parent_id, c.content, c.like_count, c.create_time,
+               u.nickname, u.avatar_url
+        from voya_ai_comment c
+        left join voya_ai_user u on c.user_id = u.id
+        where c.parent_id = #{parentId} and c.del_flag = '0'
+        order by c.create_time asc, c.id asc
+    </select>
+
+    <update id="softDelete">
+        update voya_ai_comment set del_flag = '1' where id = #{id} and del_flag = '0'
+    </update>
+
+    <update id="softDeleteReplies">
+        update voya_ai_comment set del_flag = '1' where parent_id = #{parentId} and del_flag = '0'
+    </update>
+
+    <update id="removeById">
+        update voya_ai_comment set del_flag = '1' where id = #{id} and del_flag = '0'
+    </update>
+
+    <select id="countExistingTarget" resultType="long">
+        <choose>
+            <when test="targetType == 'attraction'">
+                select count(*) from voya_ai_attraction where id = #{targetId} and del_flag = '0'
+            </when>
+            <otherwise>
+                select count(*) from voya_ai_guide where id = #{targetId} and del_flag = '0'
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="countExistingParent" resultType="long">
+        select count(*) from voya_ai_comment
+        where id = #{parentId} and target_type = #{targetType} and target_id = #{targetId}
+          and parent_id = 0 and del_flag = '0'
+    </select>
+
+    <select id="selectLikedCommentIds" resultType="long">
+        select target_id from voya_ai_like
+        where user_id = #{userId} and target_type = 'comment'
+          and target_id in
+          <foreach collection="commentIds" item="cid" open="(" separator="," close=")">#{cid}</foreach>
+    </select>
+
+    <update id="adjustAttractionCommentCount">
+        update voya_ai_attraction
+        set comment_count = greatest(0, ifnull(comment_count, 0) + #{delta})
+        where id = #{targetId}
+    </update>
+
+    <update id="adjustGuideCommentCount">
+        update voya_ai_guide
+        set comment_count = greatest(0, ifnull(comment_count, 0) + #{delta})
+        where id = #{targetId}
+    </update>
+
+</mapper>

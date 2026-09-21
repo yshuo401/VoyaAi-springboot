@@ -45,8 +45,14 @@
             <when test="targetType == 'attraction'">
                 select count(*) from voya_ai_attraction where id = #{targetId} and del_flag = '0'
             </when>
-            <otherwise>
+            <when test="targetType == 'guide'">
                 select count(*) from voya_ai_guide where id = #{targetId} and del_flag = '0'
+            </when>
+            <when test="targetType == 'comment'">
+                select count(*) from voya_ai_comment where id = #{targetId} and del_flag = '0'
+            </when>
+            <otherwise>
+                select 0
             </otherwise>
         </choose>
     </select>
@@ -78,12 +84,19 @@
         where id = #{targetId}
     </update>
 
+    <update id="adjustCommentLikeCount">
+        update voya_ai_comment
+        set like_count = greatest(0, ifnull(like_count, 0) + #{delta})
+        where id = #{targetId} and del_flag = '0'
+    </update>
+
     <select id="selectAdminList" resultMap="LikeView">
         select l.id, l.user_id, l.target_type, l.target_id, l.create_time,
                u.nickname, u.avatar_url,
                case l.target_type
                    when 'attraction' then a.name
                    when 'guide'      then g.title
+                   when 'comment'    then cc.content
                    else null
                end as target_title,
                case l.target_type
@@ -99,6 +112,7 @@
         left join voya_ai_user u       on l.user_id = u.id
         left join voya_ai_attraction a on l.target_type = 'attraction' and l.target_id = a.id and a.del_flag = '0'
         left join voya_ai_guide g      on l.target_type = 'guide'      and l.target_id = g.id and g.del_flag = '0'
+        left join voya_ai_comment cc    on l.target_type = 'comment'    and l.target_id = cc.id and cc.del_flag = '0'
         <where>
             <if test="targetType != null and targetType != ''">
                 and l.target_type = #{targetType}
@@ -122,6 +136,7 @@
                case l.target_type
                    when 'attraction' then a.name
                    when 'guide'      then g.title
+                   when 'comment'    then cc.content
                    else null
                end as target_title,
                case l.target_type
@@ -137,6 +152,7 @@
         left join voya_ai_user u       on l.user_id = u.id
         left join voya_ai_attraction a on l.target_type = 'attraction' and l.target_id = a.id
         left join voya_ai_guide g      on l.target_type = 'guide'      and l.target_id = g.id
+        left join voya_ai_comment cc    on l.target_type = 'comment'    and l.target_id = cc.id
         where l.id = #{id}
     </select>
 
