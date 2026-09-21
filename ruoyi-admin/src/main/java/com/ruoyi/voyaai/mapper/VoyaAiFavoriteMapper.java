@@ -19,7 +19,8 @@ public interface VoyaAiFavoriteMapper {
 
     int delete(@Param("userId") Long userId, @Param("targetType") String targetType, @Param("targetId") Long targetId);
 
-    List<FavoriteVO> selectAll();
+    List<FavoriteVO> selectAdminList(@Param("targetType") String targetType, @Param("nickname") String nickname,
+            @Param("beginCreateTime") String beginCreateTime, @Param("endCreateTime") String endCreateTime);
 
     FavoriteVO selectById(@Param("id") Long id);
 
