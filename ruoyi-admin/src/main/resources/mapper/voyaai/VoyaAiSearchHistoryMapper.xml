@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiSearchHistoryMapper">
+
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.SearchHistoryVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="keyword" property="keyword"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_search_history (user_id, keyword, create_time)
+        values (#{userId}, #{keyword}, now())
+    </insert>
+
+    <delete id="deleteByUserAndKeyword">
+        delete from voya_ai_search_history
+        where user_id = #{userId} and keyword = #{keyword}
+    </delete>
+
+    <delete id="deleteOldestBeyond">
+        delete from voya_ai_search_history
+        where user_id = #{userId}
+          and id not in (
+            select id from (
+                select id from voya_ai_search_history
+                where user_id = #{userId}
+                order by create_time desc, id desc
+                limit #{keep}
+            ) t
+          )
+    </delete>
+
+    <delete id="deleteByIdAndUser">
+        delete from voya_ai_search_history where id = #{id} and user_id = #{userId}
+    </delete>
+
+    <delete id="deleteByUser">
+        delete from voya_ai_search_history where user_id = #{userId}
+    </delete>
+
+    <select id="selectByUser" resultMap="ViewResult">
+        select id, keyword, create_time
+        from voya_ai_search_history
+        where user_id = #{userId}
+        order by create_time desc, id desc
+        limit 20
+    </select>
+
+    <select id="selectAdminList" resultMap="ViewResult">
+        select s.id, s.user_id, s.keyword, s.create_time,
+               u.nickname, u.avatar_url
+        from voya_ai_search_history s
+        left join voya_ai_user u on s.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and s.keyword like concat('%', #{keyword}, '%')
+            </if>
+            <if test="nickname != null and nickname != ''">
+                and u.nickname like concat('%', #{nickname}, '%')
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and s.create_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and s.create_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by s.create_time desc, s.id desc
+    </select>
+
+    <select id="selectById" resultMap="ViewResult">
+        select s.id, s.user_id, s.keyword, s.create_time,
+               u.nickname, u.avatar_url
+        from voya_ai_search_history s
+        left join voya_ai_user u on s.user_id = u.id
+        where s.id = #{id}
+    </select>
+
+    <delete id="removeById">
+        delete from voya_ai_search_history where id = #{id}
+    </delete>
+
+</mapper>
