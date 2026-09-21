@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiFeedbackMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_feedback (user_id, content, contact, images, status, create_time)
+        values (#{userId}, #{content}, #{contact}, #{images}, '0', now())
+    </insert>
+
+    <select id="selectAdminList" resultType="com.ruoyi.voyaai.domain.vo.FeedbackVO">
+        select f.id, f.user_id as userId, u.nickname, u.avatar_url as avatarUrl,
+               f.content, f.contact, f.images, f.status,
+               f.handle_remark as handleRemark, f.handle_by as handleBy,
+               f.handle_time as handleTime, f.create_time as createTime
+        from voya_ai_feedback f
+        left join voya_ai_user u on f.user_id = u.id
+        <where>
+            f.del_flag = '0'
+            <if test="status != null and status != ''">
+                and f.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and f.content like concat('%', #{keyword}, '%')
+            </if>
+            <if test="contact != null and contact != ''">
+                and f.contact like concat('%', #{contact}, '%')
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and f.create_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and f.create_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by f.id desc
+    </select>
+
+    <select id="selectById" resultType="com.ruoyi.voyaai.domain.vo.FeedbackVO">
+        select f.id, f.user_id as userId, u.nickname, u.avatar_url as avatarUrl,
+               f.content, f.contact, f.images, f.status,
+               f.handle_remark as handleRemark, f.handle_by as handleBy,
+               f.handle_time as handleTime, f.create_time as createTime
+        from voya_ai_feedback f
+        left join voya_ai_user u on f.user_id = u.id
+        where f.id = #{id} and f.del_flag = '0'
+    </select>
+
+    <update id="handle">
+        update voya_ai_feedback
+        set status = '1', handle_remark = #{handleRemark}, handle_by = #{handleBy}, handle_time = now()
+        where id = #{id} and status = '0'
+    </update>
+
+</mapper>
