@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiGuideMapper">
+    <resultMap id="EntityResult" type="com.ruoyi.voyaai.domain.entity.VoyaAiGuide">
+        <result column="id" property="id"/><result column="city_id" property="cityId"/>
+        <result column="title" property="title"/><result column="cover_image" property="coverImage"/>
+        <result column="summary" property="summary"/><result column="content" property="content"/>
+        <result column="guide_type" property="guideType"/><result column="days" property="days"/>
+        <result column="budget_min" property="budgetMin"/><result column="budget_max" property="budgetMax"/>
+        <result column="publish_status" property="publishStatus"/><result column="publish_time" property="publishTime"/>
+        <result column="view_count" property="viewCount"/><result column="like_count" property="likeCount"/>
+        <result column="favorite_count" property="favoriteCount"/><result column="comment_count" property="commentCount"/>
+        <result column="sort" property="sort"/><result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/><result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/><result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+    <resultMap id="ViewResult" type="com.ruoyi.voyaai.domain.vo.GuideVO">
+        <result column="id" property="id"/><result column="city_id" property="cityId"/>
+        <result column="title" property="title"/><result column="cover_image" property="coverImage"/>
+        <result column="summary" property="summary"/><result column="content" property="content"/>
+        <result column="guide_type" property="guideType"/><result column="days" property="days"/>
+        <result column="budget_min" property="budgetMin"/><result column="budget_max" property="budgetMax"/>
+        <result column="publish_status" property="publishStatus"/><result column="publish_time" property="publishTime"/>
+        <result column="view_count" property="viewCount"/><result column="like_count" property="likeCount"/>
+        <result column="favorite_count" property="favoriteCount"/><result column="comment_count" property="commentCount"/>
+        <result column="sort" property="sort"/><result column="remark" property="remark"/>
+        <result column="create_by" property="createBy"/><result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/><result column="update_time" property="updateTime"/>
+        <result column="city_name" property="cityName"/><result column="province_name" property="provinceName"/>
+        <result column="country_name" property="countryName"/><result column="tag_names" property="tagNames"/>
+    </resultMap>
+    <sql id="viewColumns">
+        select t.*, c.name city_name, p.name province_name, co.name country_name,
+               (select group_concat(tg.name order by tg.sort desc, tg.id separator ', ')
+                  from voya_ai_guide_tag gt join voya_ai_tag tg on tg.id = gt.tag_id
+                 where gt.guide_id = t.id and tg.del_flag = '0' and tg.status = '0') tag_names
+          from voya_ai_guide t
+          left join voya_ai_city c on c.id = t.city_id
+          left join voya_ai_province p on p.id = c.province_id
+          left join voya_ai_country co on co.id = p.country_id
+    </sql>
+    <select id="selectList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0'
+        <if test="name != null and name != ''">and t.title like concat('%', #{name}, '%')</if>
+        <if test="status != null">and t.publish_status = #{status}</if>
+        <if test="publishStatus != null">and t.publish_status = #{publishStatus}</if>
+        <if test="guideType != null and guideType != ''">and t.guide_type = #{guideType}</if>
+        <if test="cityId != null">and t.city_id = #{cityId}</if>
+        <if test="beginCreateTime != null">and t.create_time &gt;= #{beginCreateTime}</if>
+        <if test="endCreateTime != null">and t.create_time &lt; #{endExclusive}</if>
+        order by t.sort desc, t.id desc
+    </select>
+    <select id="selectPublicList" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.del_flag = '0' and t.publish_status = '1'
+          and c.del_flag = '0' and c.status = '0'
+          and p.del_flag = '0' and p.status = '0'
+          and co.del_flag = '0' and co.status = '0'
+        <if test="cityId != null">and t.city_id = #{cityId}</if>
+        <if test="keyword != null and keyword != ''">
+            and (t.title like concat('%', #{keyword}, '%') or t.summary like concat('%', #{keyword}, '%') or t.content like concat('%', #{keyword}, '%'))
+        </if>
+        <if test="guideType != null and guideType != ''">and t.guide_type = #{guideType}</if>
+        <choose>
+            <when test="sort == 'latest'">order by coalesce(t.publish_time, t.create_time) desc, t.id desc</when>
+            <when test="sort == 'hot'">order by t.view_count desc, t.like_count desc, t.id desc</when>
+            <otherwise>order by t.sort desc, t.view_count desc, coalesce(t.publish_time, t.create_time) desc, t.id desc</otherwise>
+        </choose>
+    </select>
+    <select id="selectById" resultMap="ViewResult"><include refid="viewColumns"/> where t.id = #{id} and t.del_flag = '0'</select>
+    <select id="selectPublicById" resultMap="ViewResult">
+        <include refid="viewColumns"/>
+        where t.id = #{id} and t.del_flag = '0' and t.publish_status = '1'
+          and c.del_flag = '0' and c.status = '0' and p.del_flag = '0' and p.status = '0' and co.del_flag = '0' and co.status = '0'
+    </select>
+    <select id="lockById" resultMap="EntityResult">select * from voya_ai_guide where id = #{id} and del_flag = '0' for update</select>
+    <select id="countDuplicate" resultType="long">select count(*) from voya_ai_guide where city_id = #{cityId} and title = #{title} and del_flag = '0'<if test="id != null">and id != #{id}</if></select>
+    <select id="countReferences" resultType="long">
+        (select count(*) from voya_ai_favorite where target_type = 'guide' and target_id = #{id})
+        + (select count(*) from voya_ai_like where target_type = 'guide' and target_id = #{id})
+        + (select count(*) from voya_ai_comment where target_type = 'guide' and target_id = #{id} and del_flag = '0')
+    </select>
+    <select id="countValidTags" resultType="long">select count(*) from voya_ai_tag where id in <foreach collection="tagIds" item="id" open="(" separator="," close=")">#{id}</foreach> and del_flag = '0' and status = '0'</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_guide (city_id,title,cover_image,summary,content,guide_type,days,budget_min,budget_max,publish_status,publish_time,sort,remark,create_by,create_time,update_by,update_time,del_flag)
+        values (#{cityId},#{title},#{coverImage},#{summary},#{content},#{guideType},#{days},#{budgetMin},#{budgetMax},#{publishStatus},#{publishTime},#{sort},#{remark},#{createBy},now(),#{createBy},now(),'0')
+    </insert>
+    <update id="update">
+        update voya_ai_guide set city_id=#{cityId},title=#{title},cover_image=#{coverImage},summary=#{summary},content=#{content},guide_type=#{guideType},days=#{days},budget_min=#{budgetMin},budget_max=#{budgetMax},publish_status=#{publishStatus},publish_time=#{publishTime},sort=#{sort},remark=#{remark},update_by=#{updateBy},update_time=now() where id=#{id} and del_flag='0'
+    </update>
+    <update id="changeStatus">update voya_ai_guide set publish_status=#{publishStatus},publish_time=#{publishTime},update_by=#{updateBy},update_time=now() where id=#{id} and del_flag='0'</update>
+    <update id="softDelete">update voya_ai_guide set del_flag='1',update_by=#{username},update_time=now() where id=#{id} and del_flag='0'</update>
+    <select id="selectTagNames" resultType="string">select group_concat(t.name order by t.sort desc,t.id separator ', ') from voya_ai_guide_tag gt join voya_ai_tag t on t.id=gt.tag_id where gt.guide_id=#{guideId} and t.del_flag='0' and t.status='0'</select>
+    <select id="selectTagIds" resultType="long">select tag_id from voya_ai_guide_tag where guide_id=#{guideId} order by id</select>
+    <delete id="deleteTags">delete from voya_ai_guide_tag where guide_id=#{guideId}</delete>
+    <insert id="insertTags">insert into voya_ai_guide_tag(guide_id,tag_id) values <foreach collection="tagIds" item="tagId" separator=",">(#{guideId},#{tagId})</foreach></insert>
+</mapper>
