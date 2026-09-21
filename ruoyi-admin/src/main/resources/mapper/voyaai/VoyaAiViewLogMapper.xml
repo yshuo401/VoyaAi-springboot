@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiViewLogMapper">
+
+    <resultMap id="ViewLogVOResult" type="com.ruoyi.voyaai.domain.vo.ViewLogVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="view_time" property="createTime"/>
+        <result column="target_title" property="targetTitle"/>
+        <result column="target_cover_image" property="targetCoverImage"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_view_log (user_id, target_type, target_id, ip, user_agent, view_time)
+        values (#{userId}, #{targetType}, #{targetId}, #{ip}, #{userAgent}, now())
+    </insert>
+
+    <select id="countExistingTarget" resultType="long">
+        <choose>
+            <when test="targetType == 'city'">
+                select count(*) from voya_ai_city where id = #{targetId} and del_flag = '0'
+            </when>
+            <when test="targetType == 'attraction'">
+                select count(*) from voya_ai_attraction where id = #{targetId} and del_flag = '0'
+            </when>
+            <otherwise>
+                select count(*) from voya_ai_guide where id = #{targetId} and del_flag = '0'
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="adjustCityViewCount">
+        update voya_ai_city set view_count = greatest(0, ifnull(view_count, 0) + #{delta}) where id = #{targetId}
+    </update>
+
+    <update id="adjustAttractionViewCount">
+        update voya_ai_attraction set view_count = greatest(0, ifnull(view_count, 0) + #{delta}) where id = #{targetId}
+    </update>
+
+    <update id="adjustGuideViewCount">
+        update voya_ai_guide set view_count = greatest(0, ifnull(view_count, 0) + #{delta}) where id = #{targetId}
+    </update>
+
+    <select id="selectByUser" resultMap="ViewLogVOResult">
+        select v.id, v.target_type, v.target_id, v.view_time,
+               case v.target_type
+                   when 'city'       then c.name
+                   when 'attraction' then a.name
+                   when 'guide'      then g.title
+                   else null
+               end as target_title,
+               case v.target_type
+                   when 'city'       then c.cover_image
+                   when 'attraction' then a.cover_image
+                   when 'guide'      then g.cover_image
+                   else null
+               end as target_cover_image
+        from voya_ai_view_log v
+        left join voya_ai_city c       on v.target_type = 'city'       and v.target_id = c.id       and c.del_flag = '0'
+        left join voya_ai_attraction a on v.target_type = 'attraction' and v.target_id = a.id       and a.del_flag = '0'
+        left join voya_ai_guide g      on v.target_type = 'guide'      and v.target_id = g.id       and g.del_flag = '0'
+        where v.user_id = #{userId}
+        order by v.view_time desc, v.id desc
+        limit 100
+    </select>
+
+    <delete id="removeByUser">
+        delete from voya_ai_view_log where user_id = #{userId}
+    </delete>
+
+    <select id="selectAdminList" resultMap="ViewLogVOResult">
+        select v.id, v.user_id, v.target_type, v.target_id, v.view_time,
+               u.nickname, u.avatar_url,
+               case v.target_type
+                   when 'city'       then c.name
+                   when 'attraction' then a.name
+                   when 'guide'      then g.title
+                   else null
+               end as target_title,
+               case v.target_type
+                   when 'city'       then c.cover_image
+                   when 'attraction' then a.cover_image
+                   when 'guide'      then g.cover_image
+                   else null
+               end as target_cover_image
+        from voya_ai_view_log v
+        left join voya_ai_user u       on v.user_id = u.id
+        left join voya_ai_city c       on v.target_type = 'city'       and v.target_id = c.id       and c.del_flag = '0'
+        left join voya_ai_attraction a on v.target_type = 'attraction' and v.target_id = a.id       and a.del_flag = '0'
+        left join voya_ai_guide g      on v.target_type = 'guide'      and v.target_id = g.id       and g.del_flag = '0'
+        <where>
+            <if test="targetType != null and targetType != ''">
+                and v.target_type = #{targetType}
+            </if>
+            <if test="nickname != null and nickname != ''">
+                and u.nickname like concat('%', #{nickname}, '%')
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and v.view_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and v.view_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by v.view_time desc, v.id desc
+    </select>
+
+    <select id="selectById" resultMap="ViewLogVOResult">
+        select v.id, v.user_id, v.target_type, v.target_id, v.view_time,
+               u.nickname, u.avatar_url,
+               case v.target_type
+                   when 'city'       then c.name
+                   when 'attraction' then a.name
+                   when 'guide'      then g.title
+                   else null
+               end as target_title,
+               case v.target_type
+                   when 'city'       then c.cover_image
+                   when 'attraction' then a.cover_image
+                   when 'guide'      then g.cover_image
+                   else null
+               end as target_cover_image
+        from voya_ai_view_log v
+        left join voya_ai_user u       on v.user_id = u.id
+        left join voya_ai_city c       on v.target_type = 'city'       and v.target_id = c.id
+        left join voya_ai_attraction a on v.target_type = 'attraction' and v.target_id = a.id
+        left join voya_ai_guide g      on v.target_type = 'guide'      and v.target_id = g.id
+        where v.id = #{id}
+    </select>
+
+</mapper>

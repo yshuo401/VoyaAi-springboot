@@ -30,6 +30,7 @@ public class AppSecurityConfig {
                 .accessDeniedHandler((req, res, ex) -> error(res, 403, "无权执行此操作")))
             .authorizeHttpRequests(c -> c
                 .requestMatchers(HttpMethod.POST, "/app/voyaai/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/app/voyaai/view-logs").permitAll()
                 .requestMatchers(HttpMethod.GET, "/app/voyaai/cities", "/app/voyaai/cities/*/attractions", "/app/voyaai/attractions/*", "/app/voyaai/guides", "/app/voyaai/guides/*", "/app/voyaai/tags").permitAll()
                 .anyRequest().authenticated())
             // Construct here rather than as a servlet Filter bean: it runs only in this chain.

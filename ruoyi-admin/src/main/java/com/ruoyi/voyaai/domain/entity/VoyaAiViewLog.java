@@ -1,0 +1,21 @@
+package com.ruoyi.voyaai.domain.entity;
+
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class VoyaAiViewLog {
+    private Long id;
+    private Long userId;
+    private String targetType;
+    private Long targetId;
+    private String ip;
+    private String userAgent;
+    private Date createTime;
+}
