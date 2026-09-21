@@ -29,4 +29,37 @@
         update voya_ai_user set nickname = #{nickname}, avatar_url = #{avatarUrl}, update_time = now()
         where id = #{id} and status = '0' and del_flag = '0'
     </update>
+
+    <select id="selectAdminList" resultType="com.ruoyi.voyaai.domain.vo.UserVO">
+        select id, nickname, avatar_url as avatarUrl, status,
+               create_time as createTime, last_login_time as lastLoginTime, update_time as updateTime
+        from voya_ai_user
+        <where>
+            del_flag = '0'
+            <if test="nickname != null and nickname != ''">
+                and nickname like concat('%', #{nickname}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and create_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and create_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectAdminById" resultType="com.ruoyi.voyaai.domain.vo.UserVO">
+        select id, nickname, avatar_url as avatarUrl, status,
+               create_time as createTime, last_login_time as lastLoginTime, update_time as updateTime
+        from voya_ai_user where id = #{id} and del_flag = '0'
+    </select>
+
+    <update id="changeStatus">
+        update voya_ai_user set status = #{status}, update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
 </mapper>
