@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiTripItemMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_trip_item (trip_day_id, attraction_id, item_type, title, start_time, end_time,
+            address, description, estimated_cost, sort, del_flag, create_time, update_time)
+        values (#{dayId}, #{attractionId}, #{itemType}, #{title}, #{startTime}, #{endTime},
+            #{address}, #{description}, #{estimatedCost}, #{sort}, '0', now(), now())
+    </insert>
+
+    <update id="update">
+        update voya_ai_trip_item
+        <set>
+            <if test="attractionId != null">attraction_id = #{attractionId},</if>
+            <if test="itemType != null">item_type = #{itemType},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="estimatedCost != null">estimated_cost = #{estimatedCost},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            update_time = now()
+        </set>
+        where id = #{id} and del_flag = '0'
+    </update>
+
+    <select id="selectByDayId" resultType="com.ruoyi.voyaai.domain.vo.TripItemVO">
+        select i.id, i.trip_day_id as dayId, i.attraction_id as attractionId, a.name as attractionName,
+               i.item_type as itemType, i.title, i.start_time as startTime, i.end_time as endTime,
+               i.address, i.description, i.estimated_cost as estimatedCost, i.sort
+        from voya_ai_trip_item i
+        left join voya_ai_attraction a on i.attraction_id = a.id
+        where i.trip_day_id = #{dayId} and i.del_flag = '0'
+        order by i.sort asc, i.id asc
+    </select>
+
+    <select id="selectById" resultType="com.ruoyi.voyaai.domain.entity.VoyaAiTripItem">
+        select id, trip_day_id as dayId, attraction_id as attractionId, item_type as itemType,
+               title, start_time as startTime, end_time as endTime, address, description,
+               estimated_cost as estimatedCost, sort, del_flag as delFlag,
+               create_time as createTime, update_time as updateTime
+        from voya_ai_trip_item
+        where id = #{id}
+    </select>
+
+    <update id="softDelete">
+        update voya_ai_trip_item set del_flag = '1', update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+
+    <select id="selectMaxSort" resultType="java.lang.Integer">
+        select coalesce(max(sort), 0) from voya_ai_trip_item
+        where trip_day_id = #{dayId} and del_flag = '0'
+    </select>
+
+</mapper>

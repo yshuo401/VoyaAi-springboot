@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiTripDayMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_trip_day (trip_id, day_number, date, title, description, del_flag, create_time, update_time)
+        values (#{tripId}, #{dayNumber}, #{date}, #{title}, #{description}, '0', now(), now())
+    </insert>
+
+    <update id="update">
+        update voya_ai_trip_day
+        <set>
+            <if test="dayNumber != null">day_number = #{dayNumber},</if>
+            <if test="date != null">date = #{date},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            update_time = now()
+        </set>
+        where id = #{id} and del_flag = '0'
+    </update>
+
+    <select id="selectByTripId" resultType="com.ruoyi.voyaai.domain.vo.TripDayVO">
+        select id, day_number as dayNumber, date, title, description
+        from voya_ai_trip_day
+        where trip_id = #{tripId} and del_flag = '0'
+        order by day_number asc, id asc
+    </select>
+
+    <select id="selectById" resultType="com.ruoyi.voyaai.domain.entity.VoyaAiTripDay">
+        select id, trip_id as tripId, day_number as dayNumber, date, title, description,
+               del_flag as delFlag, create_time as createTime, update_time as updateTime
+        from voya_ai_trip_day
+        where id = #{id}
+    </select>
+
+    <update id="softDelete">
+        update voya_ai_trip_day set del_flag = '1', update_time = now()
+        where id = #{id} and del_flag = '0'
+    </update>
+
+    <select id="countByDayNumber" resultType="int">
+        select count(*) from voya_ai_trip_day
+        where trip_id = #{tripId} and day_number = #{dayNumber} and del_flag = '0'
+        <if test="excludeId != null">
+            and id != #{excludeId}
+        </if>
+    </select>
+
+</mapper>

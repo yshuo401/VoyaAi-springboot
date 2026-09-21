@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiTripMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_trip (user_id, city_id, title, cover_image, start_date, end_date,
+            people_count, budget, travel_type, description, source, status, del_flag, create_time, update_time)
+        values (#{userId}, #{cityId}, #{title}, #{coverImage}, #{startDate}, #{endDate},
+            #{peopleCount}, #{budget}, #{travelType}, #{description}, #{source}, '0', '0', now(), now())
+    </insert>
+
+    <update id="update">
+        update voya_ai_trip
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="coverImage != null">cover_image = #{coverImage},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="peopleCount != null">people_count = #{peopleCount},</if>
+            <if test="budget != null">budget = #{budget},</if>
+            <if test="travelType != null">travel_type = #{travelType},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="source != null">source = #{source},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = now()
+        </set>
+        where id = #{id} and user_id = #{userId} and del_flag = '0'
+    </update>
+
+    <select id="selectById" resultType="com.ruoyi.voyaai.domain.vo.TripDetailVO">
+        select t.id, t.city_id as cityId, c.name as cityName,
+               t.title, t.cover_image as coverImage,
+               t.start_date as startDate, t.end_date as endDate,
+               t.people_count as peopleCount, t.budget, t.travel_type as travelType,
+               t.description, t.source, t.status,
+               t.create_time as createTime, t.update_time as updateTime
+        from voya_ai_trip t
+        left join voya_ai_city c on t.city_id = c.id
+        where t.id = #{id} and t.user_id = #{userId} and t.del_flag = '0'
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.ruoyi.voyaai.domain.entity.VoyaAiTrip">
+        select id, user_id as userId, city_id as cityId, title, cover_image as coverImage,
+               start_date as startDate, end_date as endDate, people_count as peopleCount,
+               budget, travel_type as travelType, description, source, status, del_flag as delFlag,
+               create_time as createTime, update_time as updateTime
+        from voya_ai_trip
+        where id = #{id} and user_id = #{userId} and del_flag = '0'
+    </select>
+
+    <select id="selectList" resultType="com.ruoyi.voyaai.domain.vo.TripListVO">
+        select t.id, t.title, t.cover_image as coverImage,
+               t.start_date as startDate, t.end_date as endDate,
+               t.people_count as peopleCount, t.budget, t.travel_type as travelType,
+               t.source, t.status, c.name as cityName,
+               (select count(*) from voya_ai_trip_day d
+                where d.trip_id = t.id and d.del_flag = '0') as dayCount,
+               t.create_time as createTime
+        from voya_ai_trip t
+        left join voya_ai_city c on t.city_id = c.id
+        where t.user_id = #{userId} and t.del_flag = '0'
+        <if test="keyword != null and keyword != ''">
+            and t.title like concat('%', #{keyword}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            and t.status = #{status}
+        </if>
+        order by t.id desc
+    </select>
+
+    <update id="softDelete">
+        update voya_ai_trip set del_flag = '1', update_time = now()
+        where id = #{id} and user_id = #{userId} and del_flag = '0'
+    </update>
+
+    <select id="selectAdminList" resultType="com.ruoyi.voyaai.domain.vo.TripListVO">
+        select t.id, t.title, t.cover_image as coverImage,
+               t.start_date as startDate, t.end_date as endDate,
+               t.people_count as peopleCount, t.budget, t.travel_type as travelType,
+               t.source, t.status, c.name as cityName,
+               u.nickname, u.avatar_url as avatarUrl,
+               (select count(*) from voya_ai_trip_day d
+                where d.trip_id = t.id and d.del_flag = '0') as dayCount,
+               t.create_time as createTime
+        from voya_ai_trip t
+        left join voya_ai_city c on t.city_id = c.id
+        left join voya_ai_user u on t.user_id = u.id
+        <where>
+            t.del_flag = '0'
+            <if test="cityId != null">
+                and t.city_id = #{cityId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and t.title like concat('%', #{keyword}, '%')
+            </if>
+            <if test="source != null and source != ''">
+                and t.source = #{source}
+            </if>
+            <if test="beginCreateTime != null and beginCreateTime != ''">
+                and t.create_time &gt;= #{beginCreateTime}
+            </if>
+            <if test="endCreateTime != null and endCreateTime != ''">
+                and t.create_time &lt; date_add(#{endCreateTime}, interval 1 day)
+            </if>
+        </where>
+        order by t.id desc
+    </select>
+
+    <select id="selectAdminById" resultType="com.ruoyi.voyaai.domain.vo.TripDetailVO">
+        select t.id, t.city_id as cityId, c.name as cityName,
+               u.nickname, u.avatar_url as avatarUrl,
+               t.title, t.cover_image as coverImage,
+               t.start_date as startDate, t.end_date as endDate,
+               t.people_count as peopleCount, t.budget, t.travel_type as travelType,
+               t.description, t.source, t.status,
+               t.create_time as createTime, t.update_time as updateTime
+        from voya_ai_trip t
+        left join voya_ai_city c on t.city_id = c.id
+        left join voya_ai_user u on t.user_id = u.id
+        where t.id = #{id} and t.del_flag = '0'
+    </select>
+
+    <select id="countEnabledCity" resultType="long">
+        select count(*) from voya_ai_city
+        where id = #{cityId} and status = '0' and del_flag = '0'
+    </select>
+
+</mapper>

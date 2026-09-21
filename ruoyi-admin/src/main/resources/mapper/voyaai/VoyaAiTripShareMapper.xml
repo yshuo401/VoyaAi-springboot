@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voyaai.mapper.VoyaAiTripShareMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into voya_ai_trip_share (trip_id, user_id, share_code, share_token, expire_time, status, create_time)
+        values (#{tripId}, #{userId}, #{shareCode}, #{shareToken}, #{expireTime}, '0', now())
+    </insert>
+
+    <select id="selectByTripId" resultType="com.ruoyi.voyaai.domain.entity.VoyaAiTripShare">
+        select id, trip_id as tripId, share_code as shareCode, share_token as shareToken,
+               expire_time as expireTime, status, create_time as createTime
+        from voya_ai_trip_share
+        where trip_id = #{tripId} and status = '0' and expire_time > now()
+    </select>
+
+    <select id="selectByShareCode" resultType="com.ruoyi.voyaai.domain.entity.VoyaAiTripShare">
+        select id, trip_id as tripId, share_code as shareCode, share_token as shareToken,
+               expire_time as expireTime, status, create_time as createTime
+        from voya_ai_trip_share
+        where share_code = #{shareCode} and status = '0'
+    </select>
+
+    <update id="invalidate">
+        update voya_ai_trip_share set status = '1'
+        where trip_id = #{tripId} and status = '0'
+    </update>
+
+    <select id="selectTripForShare" resultType="com.ruoyi.voyaai.domain.vo.TripDetailVO">
+        select t.id, t.city_id as cityId, c.name as cityName,
+               t.title, t.cover_image as coverImage,
+               t.start_date as startDate, t.end_date as endDate,
+               t.people_count as peopleCount, t.budget, t.travel_type as travelType,
+               t.description, t.source,
+               t.create_time as createTime, t.update_time as updateTime
+        from voya_ai_trip_share s
+        inner join voya_ai_trip t on s.trip_id = t.id
+        left join voya_ai_city c on t.city_id = c.id
+        where s.share_code = #{shareCode} and s.status = '0'
+          and s.expire_time > now() and t.del_flag = '0'
+    </select>
+
+</mapper>
